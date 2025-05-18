@@ -39,7 +39,7 @@ class VigenereAttack():
     def findBestKeysizeByIc(self, encrypt, min_keysize=1, max_keysize=20):
         ic_scores = []
         for keysize in range(min_keysize, max_keysize + 1):
-            # Create groups with key size from encrypt text and calculate IC
+            # Create groups with size of range(min,max) from encrypt text
             groups = ['' for _ in range(keysize)]
             for i, ch in enumerate(encrypt):
                 groups[i % keysize] += ch
@@ -49,11 +49,12 @@ class VigenereAttack():
             avg_ic = sum(group_ics) / keysize
             ic_scores.append((keysize, avg_ic))
 
-        # IC next to 1 is a natural language indicate 
+        # IC next to 1 is a natural language indicate
         ic_scores.sort(key=lambda x: -x[1])
         return ic_scores
 
     def getTopKeySizes(self, encrypt, top=5):
+        #Return the bests choices for key sizes
         keysize_guesses = self.findBestKeysizeByIc(encrypt, 1, 16)
         return [k[0] for k in keysize_guesses[:top]]
 
@@ -61,6 +62,7 @@ class VigenereAttack():
         return [encrypt[i:i+keySize] for i in range(0, len(encrypt), keySize)]
 
     def findingDislocationsBLocks(self, encrypt, keySize):
+        # Separate encrypt text in blocks and group the dislocations
         blocks = self.separeteBlocks(encrypt, keySize)
         dislocations = []
         for i in range(keySize):
@@ -75,6 +77,7 @@ class VigenereAttack():
         return chr((ord(ch.upper()) - ord('A') - shift) % 26 + ord('A'))
 
     def estimateKey(self, encrypt, keySize):
+        # Take all dislocations group 
         dislocations = self.findingDislocationsBLocks(encrypt, keySize)
         freqEnglish = self.getFrequency()
         estimateKey = []
@@ -82,6 +85,7 @@ class VigenereAttack():
             best_score = float('-inf')
             best_shift = 0
             for shift in range(26):
+                # Shift all letters in block and apply dislocations freq analysis
                 shifted = [self.shift_letter(ch, shift) for ch in block]
                 freq = {}
                 for ch in shifted:
@@ -93,22 +97,27 @@ class VigenereAttack():
                 for ch in freq:
                     freq_percent = freq[ch] / total
                     score += freq_percent * (freqEnglish.get(ch.upper(), 0) / 100)
+
+                # Best score is the choice to find how many dislocations key had
                 if score > best_score:
                     best_score = score
                     best_shift = shift
+
             estimateKey.append(best_shift)
         return estimateKey
 
     def originalText(self, encrypt):
-        encrypt = encrypt.upper()
         topKeySize = self.getTopKeySizes(encrypt)
         possiblesText = []
 
+        # Apply for all possibles key sizes frequency algorithm 
         for keySize in topKeySize:
             print(f"Estimated key size: {keySize}")
             estimateKey = self.estimateKey(encrypt, keySize)
             key = "".join(chr(shift + ord('A')) for shift in estimateKey)
             print(f"Estimated key: {key}")
+
+            #Decrypted mensage with estimated key
             decrypted = ""
             q = deque(estimateKey)
             for ch in encrypt:
@@ -122,17 +131,3 @@ class VigenereAttack():
             possiblesText.append(decrypted)
 
         return possiblesText
-
-# ===================== Teste =====================
-algoritmo = Vigenere()
-message = "O sertanejo é, antes de tudo, um forte. Não tem o raquitismo exaustivo dos mestiços neurastênicos do litoral. A sua compleição é rija, a sua disposição, altiva. É um homem que, ao invés de se curvar às adversidades do clima e da terra, aprende a resistir a elas com coragem e resignação. Nas vastidões áridas do interior, entre caatingas e veredas, ele ergue a sua vida com esforço e dignidade. Alimenta-se do pouco que a terra lhe dá, mas com isso basta-se. Sua fé é inabalável, sua esperança é constante, e seu espírito, embora rude, revela uma sabedoria ancestral que o tempo não apagou."
-key = "AMIZADE"
-
-encrypt = algoritmo.encrypt(message, key)
-decrypt = algoritmo.decrypt(encrypt, key)
-
-print(f"Encrypted: {encrypt} \n")
-print(f"Decrypted with key: {decrypt} \n")
-
-attack = VigenereAttack(portuguese=True)  
-original_text = attack.originalText(encrypt)

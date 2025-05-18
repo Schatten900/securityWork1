@@ -47,8 +47,6 @@ class Vigenere:
     def encrypt(self,mensage,keyword) -> str:
         mensage = self.normalizeMensage(mensage)
         keyword = self.normalizeMensage(keyword)
-        print(mensage)
-        print(keyword)
         keystream = keyword
         cipherText = ""
 
