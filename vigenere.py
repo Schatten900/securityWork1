@@ -1,4 +1,5 @@
 from collections import deque
+import unicodedata
 
 class Vigenere:
     def __init__(self):  
@@ -7,9 +8,6 @@ class Vigenere:
         for i in range(ord('A'), ord('Z') + 1):
             letters.append(chr(i))
             base.append(chr(i))
-
-        #letters.append("ç")
-        #q.append("ç")
 
         mp = {}
         cont = 0
@@ -38,10 +36,19 @@ class Vigenere:
     
     def getReverseTable(self):
         return self.reverse_table
+    
+    def normalizeMensage(self,mensage):
+        mensage = mensage.upper()
+        mensage = mensage.replace(" ","")
+        mensage = ''.join(c for c in unicodedata.normalize('NFD', mensage) if unicodedata.category(c) != 'Mn')
+        mensage = "".join(c for c in mensage if c.isalpha())
+        return mensage
 
     def encrypt(self,mensage,keyword) -> str:
-        mensage = mensage.replace(" ","").upper()
-        keyword = keyword.replace(" ","").upper()
+        mensage = self.normalizeMensage(mensage)
+        keyword = self.normalizeMensage(keyword)
+        print(mensage)
+        print(keyword)
         keystream = keyword
         cipherText = ""
 

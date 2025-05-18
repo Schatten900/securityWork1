@@ -24,25 +24,32 @@ class VigenereAttack():
         return self.frequency
 
     def indexCoincidences(self, text):
-        #calculates index of coincidences in the encrypt text
+        # calculates index of coincidences in the encrypt text
         textSize = len(text)
         if textSize <= 1:
             return 0
         freqs = {}
         for ch in text:
             freqs[ch] = freqs.get(ch, 0) + 1
+
+        # Uses IC formula
         ic = sum(f * (f - 1) for f in freqs.values()) / (textSize * (textSize - 1))
         return ic
 
     def findBestKeysizeByIc(self, encrypt, min_keysize=1, max_keysize=20):
         ic_scores = []
         for keysize in range(min_keysize, max_keysize + 1):
+            # Create groups with key size from encrypt text and calculate IC
             groups = ['' for _ in range(keysize)]
             for i, ch in enumerate(encrypt):
                 groups[i % keysize] += ch
+
+            # Calculates the avarage IC of all groups and store 
             group_ics = [self.indexCoincidences(group) for group in groups]
             avg_ic = sum(group_ics) / keysize
             ic_scores.append((keysize, avg_ic))
+
+        # IC next to 1 is a natural language indicate 
         ic_scores.sort(key=lambda x: -x[1])
         return ic_scores
 
@@ -118,8 +125,8 @@ class VigenereAttack():
 
 # ===================== Teste =====================
 algoritmo = Vigenere()
-message = "DEFENDTHEEASTWALLOFTHECASTLE"
-key = "FORTIFY"
+message = "O sertanejo é, antes de tudo, um forte. Não tem o raquitismo exaustivo dos mestiços neurastênicos do litoral. A sua compleição é rija, a sua disposição, altiva. É um homem que, ao invés de se curvar às adversidades do clima e da terra, aprende a resistir a elas com coragem e resignação. Nas vastidões áridas do interior, entre caatingas e veredas, ele ergue a sua vida com esforço e dignidade. Alimenta-se do pouco que a terra lhe dá, mas com isso basta-se. Sua fé é inabalável, sua esperança é constante, e seu espírito, embora rude, revela uma sabedoria ancestral que o tempo não apagou."
+key = "AMIZADE"
 
 encrypt = algoritmo.encrypt(message, key)
 decrypt = algoritmo.decrypt(encrypt, key)
@@ -127,5 +134,5 @@ decrypt = algoritmo.decrypt(encrypt, key)
 print(f"Encrypted: {encrypt} \n")
 print(f"Decrypted with key: {decrypt} \n")
 
-attack = VigenereAttack(portuguese=False)  
+attack = VigenereAttack(portuguese=True)  
 original_text = attack.originalText(encrypt)
