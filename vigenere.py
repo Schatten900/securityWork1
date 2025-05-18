@@ -81,11 +81,4 @@ class Vigenere:
             original += reverseTb[actual_pair]
         
         return original
-
-algoritimo = Vigenere()
-mensage = "ATTACK AT DAWN"
-key = "LEMON"
-encrypt = algoritimo.encrypt(mensage,key)
-decrypt = algoritimo.decrypt(encrypt,key)
-print(encrypt)
-print(decrypt)
+    
