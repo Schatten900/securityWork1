@@ -96,7 +96,6 @@ class Testes():
         print(f"Encrypt text: {encrypt}")
         original_text = self.attackPT.originalText(encrypt)
 
-
 def testAll():
     tests = Testes()
     methods = dir(tests)
